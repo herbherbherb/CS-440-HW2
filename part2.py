@@ -54,10 +54,10 @@ def main():
 
 	white_player = True
 	while True:
-		node = Node(0, "white", matrix)
-		best_node = minimax(node, white, black, False)
+		node = Node(0, "white", matrix, white, black)
+		best_node = minimax(node, node, False)
 		matrix = best_node.matrix
-		if winner(matrix):
+		if winner(matrix, white, black):
 			if white_player:
 				return matrix, "white"
 			else:
@@ -65,23 +65,83 @@ def main():
 		white_player = not white_player
 
 
-def winner(matrix):
-	return False
+def winner(matrix, white, black):
+	for col in range(8):
+		if (matrix[7][col] and matrix[7][col].player == 'black')
+			or (matrix[0][col] and matrix[0][col].player == 'white'):
+			return True
+
+	done = True	
+	for piece in white:
+		if not piece.captured:
+			done = False
+			break
+	if done:
+		return done
+
+	done = True
+	for piece in black:
+		if not piece.captured:
+			done = False
+			break
+	
+	return done
+
+def eval_func(initial, cur, is_offensive):
+	own_pieces_init = own_pieces_cur = 0
+	opp_pieces_init = opp_pieces_cur = 0
+
+	init_pos = 0
+	cur_pos = 0
+	if is_offensive:
+		for row in range(8):
+			for col in range(8):
+				#=========capture======================
+				init_piece = initial.matrix[row][col]
+				cur_piece = cur.matrix[row][col]
+				if init_piece:
+					if init_piece.player == initial.player:
+						own_pieces_init += 1
+					
+						if initial.player == 'white':
+							init_pos += 8 - row
+						else:
+							init_pos += row + 1 
+					else:
+						opp_pieces_init += 1
+
+				if cur_piece:
+					if cur_piece.player == cur.player:
+						own_pieces_cur += 1
+					
+						if initial.player == 'white':
+							cur_pos += 8 - row
+						else:
+							cur_pos += row + 1 
+					else:
+						opp_pieces_cur += 1
+
+		score = (cur_pos - init_pos) + (opp_pieces_init - opp_pieces_cur) * 2 
+					+ (own_pieces_init - own_pieces_cur) * (-1)
+				
 
 
-def minimax(node, white, black, is_offensive):
+
+
+
+def minimax(init_info, node, is_offensive):
 	if node.depth == 3:
-		node.value = eval_func(is_offensive)
+		node.value = eval_func(init_info, node, is_offensive) # (initial state, stragety, current state)
 		return node
 
 	if node.player == 'white':
-		node.children = next_moves(node, white)
+		node.children = next_moves(node, 'white')
 	else:
-		node.children = next_moves(node, black)
+		node.children = next_moves(node, 'black')
 
 	best_node = None
 	for child in node.children:
-		cur_node = minimax(child, white, black, is_offensive)
+		cur_node = minimax(init_info, child, is_offensive)    ## offensive
 		if not best_node:
 			best_node = cur_node
 		else:
@@ -92,33 +152,38 @@ def minimax(node, white, black, is_offensive):
 					best_node = cur_node
 	return best_node
 
-def next_moves(node, pieces):
+def next_moves(node, piece_color): # generate all the possible moves for next state
 	moves = []
-	matrix = node.matrix
-	for pawn in pieces:
-		if pawn.captured:
-			continue
+	matrix = node.matrix      # current state
 
-		row = pawn.row
-		col = pawn.col
-		if pawn.player == 'white':
-			row -= 1
-			if row < 0:
-				continue
-			moves = helper2(col, matrix, moves, node, row)
-		else:
-			row += 1
-			if row > 7:
-				continue
-			moves = helper2(col, matrix, moves, node, row)
+	for row in range(8):
+		for col in range(8):
+			if node.matrix[row][col]:
+				if pawn.captured:
+					continue
+
+				if pawn.player == piece_color:
+					row = pawn.row
+					col = pawn.col
+					if pawn.player == 'white':
+						row -= 1
+						if row < 0:
+							continue
+						moves = helper2(col, matrix, moves, node, row)
+					else:
+						row += 1
+						if row > 7:
+							continue
+						moves = helper2(col, matrix, moves, node, row)
+	return moves
 
 
 def helper2(col, matrix, moves, node, row):
 	next_loc = matrix[row][col]
 	if not next_loc:
 		new_matrix = matrix.copy()
-		moves = check_move(col, moves, new_matrix, node, row)
-	new_col = col + 1
+		moves = make_move(col, moves, new_matrix, node, row)
+	new_col = col + 1 		
 	if new_col <= 7:
 		moves = move_helper(col, matrix, moves, new_col, node, row)
 	new_col = col - 1
@@ -130,9 +195,13 @@ def helper2(col, matrix, moves, node, row):
 def move_helper(col, matrix, moves, new_col, node, row):
 	new_matrix = matrix.copy()
 	next_loc = new_matrix[row][new_col]
+	color = "white"
+	if node.player == "white":
+		color = "black"
+
 	if not next_loc:
-		moves = check_move(col, moves, new_matrix, node, row)
-	elif next_loc.player == "black":
+		moves = make_move(col, moves, new_matrix, node, row)
+	elif next_loc.player == color:
 		next_loc.captured = True
 		next_loc.row = -1
 		next_loc.col = -1
@@ -141,10 +210,14 @@ def move_helper(col, matrix, moves, new_col, node, row):
 	return moves
 
 
-def check_move(col, moves, new_matrix, node, row):
+def make_move(col, moves, new_matrix, node, row):
+	color = "white"
+	if node.player == "white":
+		color = "black"
+
 	new_matrix[row][col] = new_matrix[row - 1][col]
 	new_matrix[row - 1][col] = None
-	moves.append(Node(node.depth + 1, "black", new_matrix))
+	moves.append(Node(node.depth + 1, color, new_matrix))
 
 	return moves
 
