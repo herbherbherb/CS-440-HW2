@@ -2,8 +2,6 @@ import numpy as np
 import scipy as sp
 from copy import copy, deepcopy
 
-# class Node():
-
 class Node():
 	def __init__(self, depth, player, matrix, value = 0):
 		self.depth = depth
@@ -44,8 +42,7 @@ def main():
 		matrix.append(line)
 
 # 	print(matrix)
-
-# ##===============================================
+##===============================================
 
 	white_player = True
 	while True:
@@ -62,7 +59,7 @@ def main():
 				return matrix, "black"
 		node = Node(0, color, matrix)
 		best_node = minimax(node, node, True)
-		print(best_node.value)
+		print("Max Possible Value: ", best_node.value)
 		matrix = best_node.matrix
 		white_player = not white_player
 
@@ -78,7 +75,6 @@ def print_board(matrix):
 			else:
 				print('-',end='')
 		print()
-
 
 def winner(matrix):
 	for col in range(8):
@@ -172,19 +168,19 @@ def eval_func(initial, cur, is_offensive):
 		score = (cur_pos - init_pos) + (opp_pieces_init - opp_pieces_cur) + (own_pieces_init - own_pieces_cur) * (-2)
 	return score
 
-def minimax(init_info, node, is_offensive):
+def minimax(init_info, node, is_offensive): # goes to Depth 3
 	if node.depth == 3:
 		node.value = eval_func(init_info, node, is_offensive) # (initial state, stragety, current state)
 		return node
 
-	if node.player == 'white':
+	if node.player == 'white': 
 		node.children = next_moves(node, 'white')
 	else:
 		node.children = next_moves(node, 'black')
 
 	best_node = None
 	for child in node.children:
-		cur_node = minimax(init_info, child, is_offensive)    ## offensive
+		cur_node = minimax(init_info, child, is_offensive) # best of the child nodes (world state)
 		# print(best_node, " ", cur_node)
 		if node.depth == 0 and winner(child.matrix):
 			return child
@@ -195,14 +191,14 @@ def minimax(init_info, node, is_offensive):
 			else:
 				best_node = cur_node
 		else:
-			if node.depth == 0 or node.depth == 2:
-				if best_node.value < cur_node.value:
-					if node.depth == 0:
+			if node.depth == 0 or node.depth == 2:  # max player's turn
+				if best_node.value < cur_node.value: 
+					if node.depth == 0:				# 
 						child.value = cur_node.value
 						best_node = child
 					else:
 						best_node = cur_node
-			elif best_node.value > cur_node.value:
+			elif best_node.value > cur_node.value:  # min player's turn
 				best_node = cur_node
 	return best_node
 
