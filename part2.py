@@ -1,5 +1,4 @@
 import numpy as np
-import scipy as sp
 from copy import copy, deepcopy
 
 class Node():
@@ -58,23 +57,94 @@ def main():
 			else:
 				return matrix, "black"
 		node = Node(0, color, matrix)
-		best_node = minimax(node, node, True)
+		# best_node, nodes_expanded = alphabeta(node, node, True, -np.inf, np.inf, 0)
+		best_node, nodes_expanded = minimax(node, node, True, 0, 2)
 		print("Max Possible Value: ", best_node.value)
+		print("Nodes Expanded: ", nodes_expanded)
 		matrix = best_node.matrix
 		white_player = not white_player
 
-def print_board(matrix):
-	for row in range(8):
-		for col in range(8):
-			loc = matrix[row][col]
-			if loc:
-				if loc.player == 'white':
-					print('0', end='')
-				else:
-					print('1', end='')
+def minimax(init_info, node, is_offensive, curr_node_expanded, max_depth): # goes to Depth 3
+	if node.depth == max_depth:
+		node.value = eval_func(init_info, node, is_offensive) # (initial state, stragety, current state)
+		return node, 1
+
+	if node.player == 'white': 
+		node.children = next_moves(node, 'white')
+	else:
+		node.children = next_moves(node, 'black')
+
+	best_node = None
+	new_expansion = 0
+	for child in node.children:
+		cur_node, expansion = minimax(init_info, child, is_offensive, curr_node_expanded, max_depth) # best of the child nodes (world state)
+		new_expansion += expansion
+		# print(best_node, " ", cur_node)
+		if node.depth == 0 and winner(child.matrix):
+			return child, new_expansion
+		if not best_node:
+			if node.depth == 0:
+				child.value = cur_node.value
+				best_node = child
 			else:
-				print('-',end='')
-		print()
+				best_node = cur_node
+		else:
+			if node.depth == 0 or node.depth == 2:  # max player's turn
+				if best_node.value < cur_node.value: 
+					if node.depth == 0:				# 
+						child.value = cur_node.value
+						best_node = child
+					else:
+						best_node = cur_node
+			elif best_node.value > cur_node.value:  # min player's turn
+				best_node = cur_node
+	return best_node, new_expansion
+
+def alphabeta(init_info, node, is_offensive, alpha, beta, curr_node_expanded):
+	if node.depth == 4:
+		node.value = eval_func(init_info, node, is_offensive) # (initial state, stragety, current state)
+		return node, 1
+
+	if node.player == 'white': 
+		node.children = next_moves(node, 'white') #array of child nodes
+	else:	
+		node.children = next_moves(node, 'black') #array of child nodes
+
+	best_node = None
+	new_expansion = 0
+	for child in node.children:
+		cur_child, expansion = alphabeta(init_info, child, is_offensive, alpha, beta, curr_node_expanded)
+		new_expansion += expansion
+		if node.depth == 0 and winner(child.matrix):  
+			return child, new_expansion
+		if not best_node:			 			  # if best_node = None
+			if node.depth == 0:
+				child.value = cur_child.value
+				best_node = child
+			else:
+				best_node = cur_child			
+		else:
+			if node.depth == 0 or node.depth == 2 or node.depth == 4: 	# if max player turn
+				if (best_node.value < cur_child.value):
+					if node.depth == 0:
+						child.value = cur_child.value
+						best_node = child
+					else: 
+						best_node = cur_child
+
+				alpha = max(best_node.value, alpha)	# assign alpha to be max value in worst case
+				if beta <= alpha:
+					break;
+
+			else:	# if min player turn
+				if (best_node.value > cur_child.value):
+					best_node = cur_child
+					# beta = best_node.value
+				beta = min(beta, best_node.value)
+				if beta <= alpha:
+					break;
+
+	return best_node, new_expansion
 
 def winner(matrix):
 	for col in range(8):
@@ -168,40 +238,6 @@ def eval_func(initial, cur, is_offensive):
 		score = (cur_pos - init_pos) + (opp_pieces_init - opp_pieces_cur) + (own_pieces_init - own_pieces_cur) * (-2)
 	return score
 
-def minimax(init_info, node, is_offensive): # goes to Depth 3
-	if node.depth == 3:
-		node.value = eval_func(init_info, node, is_offensive) # (initial state, stragety, current state)
-		return node
-
-	if node.player == 'white': 
-		node.children = next_moves(node, 'white')
-	else:
-		node.children = next_moves(node, 'black')
-
-	best_node = None
-	for child in node.children:
-		cur_node = minimax(init_info, child, is_offensive) # best of the child nodes (world state)
-		# print(best_node, " ", cur_node)
-		if node.depth == 0 and winner(child.matrix):
-			return child
-		if not best_node:
-			if node.depth == 0:
-				child.value = cur_node.value
-				best_node = child
-			else:
-				best_node = cur_node
-		else:
-			if node.depth == 0 or node.depth == 2:  # max player's turn
-				if best_node.value < cur_node.value: 
-					if node.depth == 0:				# 
-						child.value = cur_node.value
-						best_node = child
-					else:
-						best_node = cur_node
-			elif best_node.value > cur_node.value:  # min player's turn
-				best_node = cur_node
-	return best_node
-
 def next_moves(node, piece_color): # generate all the possible moves for next state
 	moves = []
 	matrix = node.matrix      # current state
@@ -278,6 +314,21 @@ def make_move(row, old_col, new_col, new_matrix, node):
 
 	return moves
 
+def print_board(matrix):
+	for row in range(8):
+		for col in range(8):
+			loc = matrix[row][col]
+			if loc:
+				if loc.player == 'white':
+					print('0', end='')
+				else:
+					print('1', end='')
+			else:
+				print('-',end='')
+		print()
+
+
+#=======================EXTRA_CREDIT================================
 
 # def winning_
 main()
