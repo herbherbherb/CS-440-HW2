@@ -42,7 +42,7 @@ def main():
 	end = time.time()
 
 	print("Nodes Expanded: ", nodes_expanded)
-	print("Execution Time", end - start_time)
+	print("Execution Time", end - start_time, " wirSeconds")
 	import IPython
 	IPython.embed()
 	# # exit()
@@ -56,18 +56,18 @@ def print_board(matrix):
 
 def solve(matrix, words, initial_nodes):
 	if done(matrix, words):
-		# print("done")
+		print_board(matrix)
 		return matrix, words, 1
 
-	print_board(matrix)
-	print()
+	# print_board(matrix)
+	# print()
 	location = most_constrained(matrix, words) #location = (x, y, (constraints, ind)) 
 	# print(location[0], location[1], location[2])
 	# import IPython
 	# IPython.embed()
 	# exit()
 	# count = 0
-	expanded_nodes = 0
+	expanded_nodes = 1
 	for value in location[2]:
 		constraint = value[0]
 		index = value[1]
@@ -76,6 +76,7 @@ def solve(matrix, words, initial_nodes):
 		new_word_list = deepcopy(words)
 
 		new_word_list[index].start = start
+		new_word_list[index].orient = constraint.orient
 		new_word_list[index].done = True
 
 		solution, new_words, temp_node = solve(new_matrix, new_word_list, initial_nodes)
@@ -163,6 +164,7 @@ def most_constrained(matrix, constraints):
 	return solution
 
 class Break(Exception): pass
+
 
 def fit(matrix, constraint, row, col):
 	solution = []
