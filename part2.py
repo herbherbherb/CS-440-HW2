@@ -1,5 +1,7 @@
 import numpy as np
 from copy import copy, deepcopy
+import time
+
 
 class Node():
 	def __init__(self, depth, player, matrix, value = 0):
@@ -43,10 +45,35 @@ def main():
 # 	print(matrix)
 ##===============================================
 
+	# white_player = True
+	# while True:
+	# 	color = "white"
+	# 	if not white_player:
+	# 		color = "black"
+
+	# 	print_board(matrix)
+	# 	print()
+	# 	if winner(matrix):
+	# 		if white_player:
+	# 			return matrix, "white"
+	# 		else:
+	# 			return matrix, "black"
+	# 	node = Node(0, color, matrix)
+	# 	#============================
+	# 	start_time = time.time()
+	# 	# best_node, nodes_expanded = alphabeta(node, node, True, -np.inf, np.inf, 0)
+	# 	best_node, nodes_expanded = minimax(node, node, True, 0, 5)
+	# 	end = time.time()
+	# 	#============================
+	# 	print("Max Possible Value: ", best_node.value)
+	# 	print("Nodes Expanded: ", nodes_expanded)
+	# 	print("Execution Time", end - start_time)
+	# 	matrix = best_node.matrix
+	# 	white_player = not white_player
 	white_player = True
 	while True:
 		color = "white"
-		if not white_player:
+		if not white_player:    		# find the color of current player
 			color = "black"
 
 		print_board(matrix)
@@ -56,11 +83,23 @@ def main():
 				return matrix, "white"
 			else:
 				return matrix, "black"
+
+
+
 		node = Node(0, color, matrix)
+		#============================
+		start_time = time.time()
+		if white_player:     				# white player always goes first
 		# best_node, nodes_expanded = alphabeta(node, node, True, -np.inf, np.inf, 0)
-		best_node, nodes_expanded = minimax(node, node, True, 0, 2)
+			best_node, nodes_expanded = minimax(node, node, True, 0, 3)
+		else:
+			best_node, nodes_expanded = minimax(node, node, True, 0, 1)
+		end = time.time()
+		#============================
 		print("Max Possible Value: ", best_node.value)
 		print("Nodes Expanded: ", nodes_expanded)
+		print("Execution Time", end - start_time)
+
 		matrix = best_node.matrix
 		white_player = not white_player
 
@@ -101,7 +140,7 @@ def minimax(init_info, node, is_offensive, curr_node_expanded, max_depth): # goe
 	return best_node, new_expansion
 
 def alphabeta(init_info, node, is_offensive, alpha, beta, curr_node_expanded):
-	if node.depth == 4:
+	if node.depth == 5:
 		node.value = eval_func(init_info, node, is_offensive) # (initial state, stragety, current state)
 		return node, 1
 
