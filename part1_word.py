@@ -29,6 +29,8 @@ def main():
 	with open('bank1.txt') as f:
 		content = f.readlines()
 	content = [x.strip('\n') for x in content]
+	content.sort(key = lambda s: len(s), reverse = True)
+	print(content)
 	word_bank = []
 	for word in content:
 		word_bank.append(Constraint(word.upper()))
@@ -42,11 +44,11 @@ def main():
 	end = time.time()
 
 	print("Nodes Expanded: ", nodes_expanded)
-	print("Execution Time", end - start_time, " wirSeconds")
-	import IPython
-	IPython.embed()
-	# # exit()
-	# # print_board(solution)
+	print("Execution Time", end - start_time, "Seconds")
+	# import IPython
+	# IPython.embed()
+	# exit()
+	
 
 def print_board(matrix):
 	for row in matrix:
@@ -59,8 +61,8 @@ def solve(matrix, words, initial_nodes):
 		print_board(matrix)
 		return matrix, words, 1
 
-	# print_board(matrix)
-	# print()
+	print_board(matrix)
+	print()
 	location = most_constrained(matrix, words) #location = (x, y, (constraints, ind)) 
 	# print(location[0], location[1], location[2])
 	# import IPython
@@ -164,7 +166,6 @@ def most_constrained(matrix, constraints):
 	return solution
 
 class Break(Exception): pass
-
 
 def fit(matrix, constraint, row, col):
 	solution = []

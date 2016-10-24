@@ -41,36 +41,17 @@ def main():
 			else:
 				line.append(None)
 		matrix.append(line)
+##================Read_File===========================
 
-# 	print(matrix)
-##===============================================
-
-	# white_player = True
-	# while True:
-	# 	color = "white"
-	# 	if not white_player:
-	# 		color = "black"
-
-	# 	print_board(matrix)
-	# 	print()
-	# 	if winner(matrix):
-	# 		if white_player:
-	# 			return matrix, "white"
-	# 		else:
-	# 			return matrix, "black"
-	# 	node = Node(0, color, matrix)
-	# 	#============================
-	# 	start_time = time.time()
-	# 	# best_node, nodes_expanded = alphabeta(node, node, True, -np.inf, np.inf, 0)
-	# 	best_node, nodes_expanded = minimax(node, node, True, 0, 5)
-	# 	end = time.time()
-	# 	#============================
-	# 	print("Max Possible Value: ", best_node.value)
-	# 	print("Nodes Expanded: ", nodes_expanded)
-	# 	print("Execution Time", end - start_time)
-	# 	matrix = best_node.matrix
-	# 	white_player = not white_player
 	white_player = True
+	player1_time = 0.
+	player2_time = 0.
+	player1_moves = 0
+	player2_moves = 0
+	player1_nodes = 0
+	player2_nodes = 0
+
+	best_node = None
 	while True:
 		color = "white"
 		if not white_player:    		# find the color of current player
@@ -80,28 +61,67 @@ def main():
 		print()
 		if winner(matrix):
 			if white_player:
+				player1_left, player2_left = count_left(matrix)
+				print("White Player Win")
+				print("Total Time for Player 1: ", player1_time)
+				print("Total Time for Player 2: ", player2_time)
+				print("Average Time for Player 1 per Turn: ", player1_time/player1_moves)
+				print("Average Time for Player 2 per Turn: ", player2_time/player2_moves)
+				print("Average Nodes Expanded by Player 1 per Turn: ", player1_nodes/player1_moves)
+				print("Average Nodes Expanded by Player 2 per Turn: ", player2_nodes/player2_moves)
+				print("White Player Captured: ", 16 - player2_left, " Opponent's Pieces")
+				print("Black Player Captured: ", 16 - player1_left, " Opponent's Pieces")
 				return matrix, "white"
 			else:
+				player1_left, player2_left = count_left(matrix)
+				print("Black Player Win")
+				print("Total Time for Player 1: ", player1_time, " Second")
+				print("Total Time for Player 2: ", player2_time, " Second")
+				print("Average Time for Player 1 per Turn: ", player1_time/player1_moves, " Second")
+				print("Average Time for Player 2 per Turn: ", player2_time/player2_moves, "Second")
+				print("Average Nodes Expanded by Player 1 per Turn: ", player1_nodes/player1_moves)
+				print("Average Nodes Expanded by Player 2 per Turn: ", player2_nodes/player2_moves)
+				print("White Player Captured: ", 16 - player2_left, " Opponent's Pieces")
+				print("Black Player Captured: ", 16 - player1_left, " Opponent's Pieces")
 				return matrix, "black"
-
-
 
 		node = Node(0, color, matrix)
 		#============================
-		start_time = time.time()
-		if white_player:     				# white player always goes first
+		turn_time = 0
+		if white_player:     				# white player always goes first     player 1
 		# best_node, nodes_expanded = alphabeta(node, node, True, -np.inf, np.inf, 0)
-			best_node, nodes_expanded = minimax(node, node, True, 0, 3)
-		else:
+			start_time = time.time()
+			player1_moves += 1
 			best_node, nodes_expanded = minimax(node, node, True, 0, 1)
-		end = time.time()
+			player1_nodes += nodes_expanded
+			end = time.time()
+			player1_time += end - start_time
+			turn_time = end - start_time
+		else:								# black player,     player 2
+			start_time = time.time()
+			player2_moves += 1
+			best_node, nodes_expanded = minimax(node, node, True, 0, 1)
+			player2_nodes += nodes_expanded
+			end = time.time()
+			player2_time += end - start_time
+			turn_time = end - start_time
 		#============================
 		print("Max Possible Value: ", best_node.value)
 		print("Nodes Expanded: ", nodes_expanded)
-		print("Execution Time", end - start_time)
+		print("Execution Time", turn_time)
 
 		matrix = best_node.matrix
 		white_player = not white_player
+
+def count_left(matrix):
+	player1 = player2 = 0
+	for row in range(8):
+		for col in range(8):
+			if matrix[row][col] and matrix[row][col].player == 'white':
+				player1 += 1
+			elif matrix[row][col] and matrix[row][col].player == 'black':
+				player2 += 1
+	return player1, player2
 
 def minimax(init_info, node, is_offensive, curr_node_expanded, max_depth): # goes to Depth 3
 	if node.depth == max_depth:
